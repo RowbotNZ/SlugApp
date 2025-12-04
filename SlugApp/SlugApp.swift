@@ -12,17 +12,36 @@ import WebKit
 struct SlugApp: App {
     var body: some Scene {
         WindowGroup {
-            TabView {
-                SlugsView(viewModel: SlugsViewModel())
-                    .tabItem {
-                        Label("Slugs", systemImage: "list.bullet")
-                    }
+            NavigationStack {
+                TabView {
+                    SlugsView(viewModel: SlugsViewModel())
+                        .tabItem {
+                            Label("Slugs", systemImage: "list.bullet")
+                        }
 
-                WebView(url: URL(string: "https://en.wikipedia.org/wiki/Slug"))
-                    .tabItem {
-                        Label("Info", systemImage: "network")
+                    WebView(url: URL(string: "https://en.wikipedia.org/wiki/Slug"))
+                        .tabItem {
+                            Label("Info", systemImage: "network")
+                        }
+                }
+                .transition(.blurReplace)
+                .id(id)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            withAnimation {
+                                id = UUID()
+                            }
+                        } label: {
+                            Label("Clear", systemImage: "xmark")
+                        }
                     }
+                }
             }
         }
     }
+
+
+    @State
+    private var id: UUID = UUID()
 }

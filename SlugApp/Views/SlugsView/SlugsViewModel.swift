@@ -34,6 +34,10 @@ final class SlugsViewModel {
         _viewState = createViewState()
     }
 
+    deinit {
+        print("SLUGS - DEINIT")
+    }
+
     func run() async {
         await taskScheduler.run { [weak self] in
             guard let self else { return }
