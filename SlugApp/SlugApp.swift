@@ -24,11 +24,14 @@ struct SlugApp: App {
                             Label("Info", systemImage: "network")
                         }
                 }
+                .transition(.blurReplace)
                 .id(id)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            id = UUID()
+                            withAnimation {
+                                id = UUID()
+                            }
                         } label: {
                             Label("Clear", systemImage: "xmark")
                         }
