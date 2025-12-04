@@ -36,6 +36,7 @@ struct SlugsView: View {
 extension SlugsView {
     struct SlugView: View {
         var body: some View {
+            let color = color.opacity(.random(in: 0.75...1))
             Image("slug")
                 .resizable()
                 .frame(width: slugDimension, height: slugDimension)
