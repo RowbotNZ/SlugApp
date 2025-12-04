@@ -25,6 +25,8 @@ final class SlugsViewModel {
     @ObservationIgnored
     private let taskScheduler: TaskScheduler
 
+    /// **Demo commentary:**
+    /// - `TaskScheduler` can be injected to allow unit tests to await task milestones.
     init(
         taskScheduler: TaskScheduler = TaskScheduler()
     ) {
@@ -38,6 +40,8 @@ final class SlugsViewModel {
         print("SLUGS - DEINIT")
     }
 
+    /// **Demo commentary:**
+    /// - Async `run` method can be called from SwiftUI `task` modifier to establish the lifecycle task context for the view model.
     func run() async {
         await taskScheduler.run { [weak self] in
             guard let self else { return }

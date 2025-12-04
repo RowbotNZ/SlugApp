@@ -27,8 +27,13 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
+        /// **Demo commentary:**
+        /// - Tests must call `run` to establish the lifecycle task context for the view model.
+        /// - Cancelling the run task allows one to test the lifecycle awareness of the view model.
         async let _ = viewModel.run()
 
+        /// **Demo commentary:**
+        /// - Tests can await task milestones to ensure they make their assertions at the right time.
         try await taskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
