@@ -22,14 +22,26 @@ final class SlugsViewModel {
 
     private var _viewState: ViewState!
 
-    init() {
-        self.model = Model(slugs: [Model.Slug()])
+    @ObservationIgnored
+    private let taskScheduler: TaskScheduler
 
-        Task {
-            try await spawnSlugs()
-        }
+    init(
+        taskScheduler: TaskScheduler = TaskScheduler()
+    ) {
+        self.model = Model(slugs: [Model.Slug()])
+        self.taskScheduler = taskScheduler
 
         _viewState = createViewState()
+    }
+
+    func run() async {
+        await taskScheduler.run { [weak self] in
+            guard let self else { return }
+
+            taskScheduler.addRunContextTask { [self] in
+                try? await spawnSlugs()
+            }
+        }
     }
 
     private func createViewState() -> ViewState {
@@ -71,7 +83,7 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        Task { @MainActor in
+        taskScheduler.addRunContextTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
             guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }
