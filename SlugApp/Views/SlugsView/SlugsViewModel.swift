@@ -28,6 +28,9 @@ final class SlugsViewModel {
         _viewState = createViewState()
 
         Task {
+            /// **Demo commentary:**
+            /// - Task captures `self` and never completes or cancels, so `self` can never be released.
+            /// - Task is not lifecycle-aware, so slugs continue to spawn even if you're not looking.
             try await spawnSlugs()
         }
     }

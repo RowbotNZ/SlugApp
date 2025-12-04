@@ -25,6 +25,8 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
+        /// **Demo commentary:**
+        /// - Tests have arbitrary sleeps in them to allow internal view model tasks to complete before making assertions.
         try await Task.sleep(nanoseconds: 9 * NSEC_PER_SEC)
 
         #expect(viewModel.viewState.slugs.count == 2)
