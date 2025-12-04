@@ -37,7 +37,7 @@ final class SlugsViewModel {
         _viewState = createViewState()
 
         spawnSlugsTask = taskScheduler.task { [weak self] in
-            try? await Self.spawnSlugs(instance: { [weak self] in self })
+            try? await self?.spawnSlugs()
         }
     }
 
@@ -67,16 +67,15 @@ final class SlugsViewModel {
         )
     }
 
-    private static func spawnSlugs(instance: () -> SlugsViewModel?) async throws(CancellationError) {
-        weak var instance = instance()
+    private func spawnSlugs() async throws(CancellationError) {
         while true {
             try? await Task.sleep(nanoseconds: 2 * NSEC_PER_SEC)
 
             if Task.isCancelled {
                 throw CancellationError()
             } else {
-                if let randomSlug = instance?.model.slugs.randomElement() {
-                    instance?.triggerSlugReproduction(slugId: randomSlug.id)
+                if let randomSlug = model.slugs.randomElement() {
+                    triggerSlugReproduction(slugId: randomSlug.id)
                 }
             }
         }
