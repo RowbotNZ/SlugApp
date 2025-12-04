@@ -15,3 +15,5 @@ Two considerations were top of mind for me at the time:
 
 I was curious about ways to leverage SwiftUI's `task` modifier to couple these async operations to the lifecycle of a view. `TaskScheduler` is what I ended up with; it uses a `TaskGroup` and an `AsyncStream` to inject concurrent async operations into the `Task` context provided by the SwiftUI `task` modifier`. In this way, any async operations that we inject will be cancelled when the parent `task` is cancelled.
 
+This works really well for tasks that we want to couple to a particular view being onscreen, but it doesn't work for tasks that we want to 
+

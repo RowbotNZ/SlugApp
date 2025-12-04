@@ -25,6 +25,9 @@ final class SlugsViewModel {
     @ObservationIgnored
     private let taskScheduler: TaskScheduler
 
+    @ObservationIgnored
+    private var spawnSlugsTask: Task<Void, Never>?
+
     init(
         taskScheduler: TaskScheduler = TaskScheduler()
     ) {
@@ -32,16 +35,20 @@ final class SlugsViewModel {
         self.taskScheduler = taskScheduler
 
         _viewState = createViewState()
+
+        spawnSlugsTask = taskScheduler.task { [weak self] in
+            try? await Self.spawnSlugs(instance: { [weak self] in self })
+        }
+    }
+
+    deinit {
+        print("SLUGS - DEINIT")
+
+        spawnSlugsTask?.cancel()
     }
 
     func run() async {
-        await taskScheduler.run { [weak self] in
-            guard let self else { return }
-
-            taskScheduler.addRunContextTask { [self] in
-                try? await spawnSlugs()
-            }
-        }
+        await taskScheduler.run {}
     }
 
     private func createViewState() -> ViewState {
@@ -60,15 +67,16 @@ final class SlugsViewModel {
         )
     }
 
-    private func spawnSlugs() async throws(CancellationError) {
+    private static func spawnSlugs(instance: () -> SlugsViewModel?) async throws(CancellationError) {
+        weak var instance = instance()
         while true {
             try? await Task.sleep(nanoseconds: 2 * NSEC_PER_SEC)
 
             if Task.isCancelled {
                 throw CancellationError()
             } else {
-                if let randomSlug = model.slugs.randomElement() {
-                    triggerSlugReproduction(slugId: randomSlug.id)
+                if let randomSlug = instance?.model.slugs.randomElement() {
+                    instance?.triggerSlugReproduction(slugId: randomSlug.id)
                 }
             }
         }
