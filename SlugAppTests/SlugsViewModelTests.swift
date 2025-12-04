@@ -12,12 +12,10 @@ import Testing
 
 @MainActor
 struct SlugsViewModelTests {
-    let taskScheduler: TaskScheduler
     let viewModel: SlugsViewModel
 
     init() {
-        self.taskScheduler = TaskScheduler()
-        self.viewModel = SlugsViewModel(taskScheduler: taskScheduler)
+        self.viewModel = SlugsViewModel()
     }
 
     @Test
@@ -27,20 +25,16 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        async let _ = viewModel.run()
-
-        try await taskScheduler.next()
+        try await Task.sleep(nanoseconds: 9 * NSEC_PER_SEC)
 
         #expect(viewModel.viewState.slugs.count == 2)
     }
 
     @Test
     func testSlugsReproduceWhenTapped() async throws {
-        async let _ = viewModel.run()
-
         viewModel.viewState.slugs.first?.onTap()
 
-        try await taskScheduler.next()
+        try await Task.sleep(nanoseconds: 6 * NSEC_PER_SEC)
 
         #expect(viewModel.viewState.slugs.count == 2)
     }

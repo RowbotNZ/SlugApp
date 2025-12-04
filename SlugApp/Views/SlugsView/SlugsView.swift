@@ -26,7 +26,6 @@ struct SlugsView: View {
         }
         .padding()
         .navigationTitle(viewModel.viewState.title)
-        .task { await viewModel.run() }
     }
 
     @State
