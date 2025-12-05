@@ -67,6 +67,10 @@ final class SlugsViewModel {
         )
     }
 
+    /// **Demo commentary:**
+    /// - Making the async method `static` prevents it from retaining `self`, but we still need access to our instance variables somehow.
+    /// - Swift doesn't seem to support passing weak references as function parameters, but we can get around this by passing a closure that weakly captures the instance.
+    /// - This is pretty nasty, but it does seem to solve the problem.
     private static func spawnSlugs(instance: () -> SlugsViewModel?) async throws(CancellationError) {
         weak var instance = instance()
         while true {
