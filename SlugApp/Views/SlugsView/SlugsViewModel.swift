@@ -36,6 +36,8 @@ final class SlugsViewModel {
 
         _viewState = createViewState()
 
+        /// **Demo commentary:**
+        /// - Attempting to create a task that continues until the view model is released.
         spawnSlugsTask = taskScheduler.task { [weak self] in
             try? await self?.spawnSlugs()
         }
@@ -68,6 +70,8 @@ final class SlugsViewModel {
     }
 
     private func spawnSlugs() async throws(CancellationError) {
+        /// **Demo commentary:**
+        /// - Async instance method retains `self` until it returns.
         while true {
             try? await Task.sleep(nanoseconds: 2 * NSEC_PER_SEC)
 
@@ -90,10 +94,10 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        taskScheduler.addRunContextTask { @MainActor [self] in
+        taskScheduler.task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
-            guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }
+            guard let self, let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }
 
             model.slugs = {
                 var slugs = model.slugs
