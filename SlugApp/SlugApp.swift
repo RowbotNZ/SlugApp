@@ -14,10 +14,14 @@ struct SlugApp: App {
         WindowGroup {
             NavigationStack {
                 TabView {
-                    SlugsView(viewModel: SlugsViewModel())
-                        .tabItem {
-                            Label("Slugs", systemImage: "list.bullet")
-                        }
+                    SlugsView(
+                        viewModelHolder: ViewModelHolder(
+                            viewModel: SlugsViewModel.init(lifetimeTaskScheduler:)
+                        )
+                    )
+                    .tabItem {
+                        Label("Slugs", systemImage: "list.bullet")
+                    }
 
                     WebView(url: URL(string: "https://en.wikipedia.org/wiki/Slug"))
                         .tabItem {

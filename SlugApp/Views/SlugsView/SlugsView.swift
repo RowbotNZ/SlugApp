@@ -26,11 +26,14 @@ struct SlugsView: View {
         }
         .padding()
         .navigationTitle(viewModel.viewState.title)
-        .task { await viewModel.run() }
     }
 
+    /// **Demo commentary:**
+    /// - `ViewModelHolder` is also `@Observable`, so SwiftUI can detect changes from the `@Observable` view model inside.
     @State
-    var viewModel: SlugsViewModel
+    var viewModelHolder: ViewModelHolder<SlugsViewModel>
+
+    private var viewModel: SlugsViewModel { viewModelHolder.viewModel }
 }
 
 extension SlugsView {
@@ -118,5 +121,9 @@ extension SlugsView {
 }
 
 #Preview {
-    SlugsView(viewModel: SlugsViewModel())
+    SlugsView(
+        viewModelHolder: ViewModelHolder(
+            viewModel: SlugsViewModel.init(lifetimeTaskScheduler:)
+        )
+    )
 }

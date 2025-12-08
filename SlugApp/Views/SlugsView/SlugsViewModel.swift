@@ -23,32 +23,31 @@ final class SlugsViewModel {
     private var _viewState: ViewState!
 
     @ObservationIgnored
-    private let taskScheduler: TaskScheduler
+    private let lifetimeTaskScheduler: TaskScheduler
 
     @ObservationIgnored
     private var spawnSlugsTask: Task<Void, Never>?
 
+    /// **Demo commentary:**
+    /// - We accept a "lifetime task scheduler" as a parameter, meaning we expect that the task scheduler has already been set up with a run context to match our view model's lifecycle.
+    /// - We could also accept another task scheduler parameter if we wanted `onAppear`/`onDisappear` scope for some tasks.
     init(
-        taskScheduler: TaskScheduler = TaskScheduler()
+        lifetimeTaskScheduler: TaskScheduler
     ) {
         self.model = Model(slugs: [Model.Slug()])
-        self.taskScheduler = taskScheduler
+        self.lifetimeTaskScheduler = lifetimeTaskScheduler
 
         _viewState = createViewState()
 
-        spawnSlugsTask = taskScheduler.task { [weak self] in
-            try? await Self.spawnSlugs(instance: { [weak self] in self })
+        /// **Demo commentary:**
+        /// - We can use a run context task for our slug spawning now, because the run context is externally set up to match the lifetime of the view model.
+        lifetimeTaskScheduler.addRunContextTask { [self] in
+            try? await spawnSlugs()
         }
     }
 
     deinit {
         print("SLUGS - DEINIT")
-
-        spawnSlugsTask?.cancel()
-    }
-
-    func run() async {
-        await taskScheduler.run {}
     }
 
     private func createViewState() -> ViewState {
@@ -67,20 +66,15 @@ final class SlugsViewModel {
         )
     }
 
-    /// **Demo commentary:**
-    /// - Making the async method `static` prevents it from retaining `self`, but we still need access to our instance variables somehow.
-    /// - Swift doesn't seem to support passing weak references as function parameters, but we can get around this by passing a closure that weakly captures the instance.
-    /// - This is pretty nasty, but it does seem to solve the problem.
-    private static func spawnSlugs(instance: () -> SlugsViewModel?) async throws(CancellationError) {
-        weak var instance = instance()
+    private func spawnSlugs() async throws(CancellationError) {
         while true {
             try? await Task.sleep(nanoseconds: 2 * NSEC_PER_SEC)
 
             if Task.isCancelled {
                 throw CancellationError()
             } else {
-                if let randomSlug = instance?.model.slugs.randomElement() {
-                    instance?.triggerSlugReproduction(slugId: randomSlug.id)
+                if let randomSlug = model.slugs.randomElement() {
+                    triggerSlugReproduction(slugId: randomSlug.id)
                 }
             }
         }
@@ -95,10 +89,10 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        taskScheduler.task { @MainActor [weak self] in
+        lifetimeTaskScheduler.addRunContextTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
-            guard let self, let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }
+            guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }
 
             model.slugs = {
                 var slugs = model.slugs
