@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		125DC4D62EECF34B00B019DE /* TaskScheduler in Frameworks */ = {isa = PBXBuildFile; productRef = 125DC4D52EECF34B00B019DE /* TaskScheduler */; };
+		125DC4D82EECF34B00B019DE /* ViewModelTaskScheduler in Frameworks */ = {isa = PBXBuildFile; productRef = 125DC4D72EECF34B00B019DE /* ViewModelTaskScheduler */; };
+		125DC4DA2EECF3C200B019DE /* TaskScheduler in Frameworks */ = {isa = PBXBuildFile; productRef = 125DC4D92EECF3C200B019DE /* TaskScheduler */; };
+		125DC4DC2EECF3C200B019DE /* ViewModelTaskScheduler in Frameworks */ = {isa = PBXBuildFile; productRef = 125DC4DB2EECF3C200B019DE /* ViewModelTaskScheduler */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		120896902EDF908500A682EB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -53,6 +60,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				125DC4D82EECF34B00B019DE /* ViewModelTaskScheduler in Frameworks */,
+				125DC4D62EECF34B00B019DE /* TaskScheduler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,6 +69,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				125DC4DC2EECF3C200B019DE /* ViewModelTaskScheduler in Frameworks */,
+				125DC4DA2EECF3C200B019DE /* TaskScheduler in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,6 +125,8 @@
 			);
 			name = SlugApp;
 			packageProductDependencies = (
+				125DC4D52EECF34B00B019DE /* TaskScheduler */,
+				125DC4D72EECF34B00B019DE /* ViewModelTaskScheduler */,
 			);
 			productName = SlugApp;
 			productReference = 120896822EDF908200A682EB /* SlugApp.app */;
@@ -137,6 +150,8 @@
 			);
 			name = SlugAppTests;
 			packageProductDependencies = (
+				125DC4D92EECF3C200B019DE /* TaskScheduler */,
+				125DC4DB2EECF3C200B019DE /* ViewModelTaskScheduler */,
 			);
 			productName = SlugAppTests;
 			productReference = 1208968F2EDF908500A682EB /* SlugAppTests.xctest */;
@@ -197,6 +212,9 @@
 			);
 			mainGroup = 120896792EDF908200A682EB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				125DC4D42EECF34B00B019DE /* XCLocalSwiftPackageReference "TaskScheduler" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 120896832EDF908200A682EB /* Products */;
 			projectDirPath = "";
@@ -578,6 +596,32 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		125DC4D42EECF34B00B019DE /* XCLocalSwiftPackageReference "TaskScheduler" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = TaskScheduler;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		125DC4D52EECF34B00B019DE /* TaskScheduler */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TaskScheduler;
+		};
+		125DC4D72EECF34B00B019DE /* ViewModelTaskScheduler */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ViewModelTaskScheduler;
+		};
+		125DC4D92EECF3C200B019DE /* TaskScheduler */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TaskScheduler;
+		};
+		125DC4DB2EECF3C200B019DE /* ViewModelTaskScheduler */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ViewModelTaskScheduler;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1208967A2EDF908200A682EB /* Project object */;
 }

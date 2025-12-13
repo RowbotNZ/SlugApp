@@ -1,0 +1,3 @@
+[submodule "TaskScheduler"]
+	path = TaskScheduler
+	url = https://RowbotNZ@github.com/RowbotNZ/TaskScheduler.git

@@ -8,6 +8,8 @@
 import SwiftUI
 import WebKit
 
+import ViewModelTaskScheduler
+
 @main
 struct SlugApp: App {
     var body: some Scene {

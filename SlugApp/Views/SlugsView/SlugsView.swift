@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import ViewModelTaskScheduler
+
 struct SlugsView: View {
     var body: some View {
         GeometryReader { geometryProxy in

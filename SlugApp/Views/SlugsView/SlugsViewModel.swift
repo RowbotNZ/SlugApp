@@ -8,6 +8,8 @@
 import Foundation
 import Observation
 
+import ViewModelTaskScheduler
+
 @MainActor
 @Observable
 final class SlugsViewModel {

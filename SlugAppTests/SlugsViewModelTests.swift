@@ -8,6 +8,8 @@
 import Foundation
 import Testing
 
+@testable import ViewModelTaskScheduler
+
 @testable import SlugApp
 
 @MainActor
