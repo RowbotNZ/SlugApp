@@ -26,9 +26,6 @@ struct SlugsView: View {
         }
         .padding()
         .navigationTitle(viewModel.viewState.title)
-        /// **Demo commentary:**
-        /// - View model run context is coupled to view lifecycle using SwiftUI's `task` modifier.
-        .task { await viewModel.run() }
     }
 
     @State
@@ -119,6 +116,16 @@ extension SlugsView {
     }
 }
 
+extension SlugsViewModel: ViewModel {
+    func buildView() -> some View {
+        SlugsView(viewModel: self)
+    }
+}
+
 #Preview {
-    SlugsView(viewModel: SlugsViewModel())
+    ViewModelView(
+        viewModelHolder: ViewModelHolder(
+            viewModel: SlugsViewModel.init(viewModelTaskScheduler:)
+        )
+    )
 }

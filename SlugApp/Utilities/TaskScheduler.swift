@@ -16,13 +16,13 @@ public final class TaskScheduler: Sendable {
 
     private var runContextTask: Task<Void, Never>?
 
-    private var runContextTaskStream: AsyncStream<@Sendable () async -> Void>? {
+    private var runContextStream: AsyncStream<Void>? {
         didSet {
-            isRunning = runContextTaskStream != nil
+            isRunning = runContextStream != nil
         }
     }
 
-    private var runContextTaskStreamContinuation: AsyncStream<@Sendable () async -> Void>.Continuation?
+    private var runContextStreamContinuation: AsyncStream<Void>.Continuation?
 
     private let taskCompletionStream: AsyncStream<Void>
 
@@ -37,7 +37,7 @@ public final class TaskScheduler: Sendable {
     }
 
     deinit {
-        runContextTaskStreamContinuation?.finish()
+        runContextStreamContinuation?.finish()
         taskCompletionStreamContinuation.finish()
     }
 
@@ -56,21 +56,18 @@ public final class TaskScheduler: Sendable {
         let task = Task {
             defer {
                 /// If we have reached this point then the parent `Task` must have been cancelled, meaning that the task scheduler is no longer running.
-                runContextTaskStream = nil
-                runContextTaskStreamContinuation = nil
+                runContextStream = nil
+                runContextStreamContinuation = nil
                 runContextTask = nil
             }
 
             /// Invoke the `willBegin` callback now that the resources for any prior run context have been tidied up.
             willBegin?()
 
-            let queuedRunContextTasks = queuedRunContextTasks
-            self.queuedRunContextTasks = []
-
             /// Create task stream resources to iterate run context tasks. These will remain active until the parent task is cancelled.
-            let (runContextTaskStream, runContextTaskStreamContinuation) = AsyncStream<@Sendable () async -> Void>.makeStream()
-            self.runContextTaskStream = runContextTaskStream
-            self.runContextTaskStreamContinuation = runContextTaskStreamContinuation
+            let (runContextStream, runContextStreamContinuation) = AsyncStream<Void>.makeStream()
+            self.runContextStream = runContextStream
+            self.runContextStreamContinuation = runContextStreamContinuation
 
             let handleTask: @Sendable (@Sendable () async -> Void) async -> Void = { [weak self] task in
                 await task()
@@ -78,18 +75,27 @@ public final class TaskScheduler: Sendable {
                 self?.taskCompletionStreamContinuation.yield()
             }
 
-            await withTaskGroup(of: Void.self) { taskGroup in
-                for task in queuedRunContextTasks {
-                    taskGroup.addTask {
-                        await handleTask(task)
+            await withTaskGroup(of: Void.self) { [self] taskGroup in
+                let handleQueuedRunContextTasks: (inout TaskGroup) -> Void = { [self] taskGroup in
+                    while !queuedRunContextTasks.isEmpty {
+                        let task = queuedRunContextTasks.removeFirst()
+
+                        taskGroup.addTask {
+                            await handleTask(task)
+                        }
                     }
                 }
 
-                for await task in runContextTaskStream {
-                    taskGroup.addTask {
-                        await handleTask(task)
-                    }
+                /// Handle any run context tasks that were enqueued before the run context was established.
+                handleQueuedRunContextTasks(&taskGroup)
+
+                /// Handle enqueued run context tasks every time `runContextStream` emits an element.
+                for await _ in runContextStream {
+                    handleQueuedRunContextTasks(&taskGroup)
                 }
+
+                /// If the parent task was cancelled while `runContextStream` had elements buffered, the `AsyncStream` will have dropped these elements, so we manually handle all of the remaining tasks at the end. Doing this ensures that every enqueued task gets executed, even if it is immediately cancelled, allowing any tidy up that may be required.
+                handleQueuedRunContextTasks(&taskGroup)
             }
         }
 
@@ -104,10 +110,10 @@ public final class TaskScheduler: Sendable {
 
     /// Adds a unit of asynchronous work to the run context, if it is active, otherwise adds it to a queue to be scheduled when the run context is established.
     public func addRunContextTask(_ task: @escaping @Sendable () async -> Void) {
-        if let runContextTaskStreamContinuation {
-            runContextTaskStreamContinuation.yield(task)
-        } else {
-            queuedRunContextTasks.append(task)
+        queuedRunContextTasks.append(task)
+
+        if let runContextStreamContinuation {
+            runContextStreamContinuation.yield()
         }
     }
 

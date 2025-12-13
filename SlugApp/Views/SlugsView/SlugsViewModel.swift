@@ -23,33 +23,25 @@ final class SlugsViewModel {
     private var _viewState: ViewState!
 
     @ObservationIgnored
-    private let taskScheduler: TaskScheduler
+    private let viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
 
     /// **Demo commentary:**
     /// - `TaskScheduler` can be injected to allow unit tests to await task milestones.
     init(
-        taskScheduler: TaskScheduler = TaskScheduler()
+        viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
     ) {
         self.model = Model(slugs: [Model.Slug()])
-        self.taskScheduler = taskScheduler
+        self.viewModelTaskScheduler = viewModelTaskScheduler
 
         _viewState = createViewState()
+
+        viewModelTaskScheduler.lifetimeTask { [self] in
+            try? await spawnSlugs()
+        }
     }
 
     deinit {
         print("SLUGS - DEINIT")
-    }
-
-    /// **Demo commentary:**
-    /// - Async `run` method can be called from SwiftUI `task` modifier to establish the lifecycle task context for the view model.
-    func run() async {
-        await taskScheduler.run { [weak self] in
-            guard let self else { return }
-
-            taskScheduler.addRunContextTask { [self] in
-                try? await spawnSlugs()
-            }
-        }
     }
 
     private func createViewState() -> ViewState {
@@ -91,7 +83,7 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        taskScheduler.addRunContextTask { @MainActor [self] in
+        viewModelTaskScheduler.onScreenTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
             guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }

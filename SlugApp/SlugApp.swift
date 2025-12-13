@@ -14,10 +14,14 @@ struct SlugApp: App {
         WindowGroup {
             NavigationStack {
                 TabView {
-                    SlugsView(viewModel: SlugsViewModel())
-                        .tabItem {
-                            Label("Slugs", systemImage: "list.bullet")
-                        }
+                    ViewModelView(
+                        viewModelHolder: ViewModelHolder(
+                            viewModel: SlugsViewModel.init(viewModelTaskScheduler:)
+                        )
+                    )
+                    .tabItem {
+                        Label("Slugs", systemImage: "list.bullet")
+                    }
 
                     WebView(url: URL(string: "https://en.wikipedia.org/wiki/Slug"))
                         .tabItem {
@@ -40,7 +44,6 @@ struct SlugApp: App {
             }
         }
     }
-
 
     @State
     private var id: UUID = UUID()

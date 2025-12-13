@@ -12,12 +12,12 @@ import Testing
 
 @MainActor
 struct SlugsViewModelTests {
-    let taskScheduler: TaskScheduler
+    let viewModelTaskScheduler: ViewModelTaskScheduler
     let viewModel: SlugsViewModel
 
     init() {
-        self.taskScheduler = TaskScheduler()
-        self.viewModel = SlugsViewModel(taskScheduler: taskScheduler)
+        self.viewModelTaskScheduler = ViewModelTaskScheduler()
+        self.viewModel = SlugsViewModel(viewModelTaskScheduler: viewModelTaskScheduler)
     }
 
     @Test
@@ -27,25 +27,22 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        /// **Demo commentary:**
-        /// - Tests must call `run` to establish the lifecycle task context for the view model.
-        /// - Cancelling the run task allows one to test the lifecycle awareness of the view model.
-        async let _ = viewModel.run()
+        async let _ = viewModelTaskScheduler.runOnScreenContext()
+        async let _ = viewModelTaskScheduler.runLifetimeContext()
 
-        /// **Demo commentary:**
-        /// - Tests can await task milestones to ensure they make their assertions at the right time.
-        try await taskScheduler.next()
+        try await viewModelTaskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }
 
     @Test
     func testSlugsReproduceWhenTapped() async throws {
-        async let _ = viewModel.run()
+        async let _ = viewModelTaskScheduler.runOnScreenContext()
+        async let _ = viewModelTaskScheduler.runLifetimeContext()
 
         viewModel.viewState.slugs.first?.onTap()
 
-        try await taskScheduler.next()
+        try await viewModelTaskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }
