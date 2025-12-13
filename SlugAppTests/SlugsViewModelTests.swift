@@ -12,12 +12,12 @@ import Testing
 
 @MainActor
 struct SlugsViewModelTests {
-    let lifetimeTaskScheduler: TaskScheduler
+    let viewModelTaskScheduler: ViewModelTaskScheduler
     let viewModel: SlugsViewModel
 
     init() {
-        self.lifetimeTaskScheduler = TaskScheduler()
-        self.viewModel = SlugsViewModel(lifetimeTaskScheduler: lifetimeTaskScheduler)
+        self.viewModelTaskScheduler = ViewModelTaskScheduler()
+        self.viewModel = SlugsViewModel(viewModelTaskScheduler: viewModelTaskScheduler)
     }
 
     @Test
@@ -27,20 +27,22 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        async let _ = lifetimeTaskScheduler.run()
+        async let _ = viewModelTaskScheduler.runOnScreenContext()
+        async let _ = viewModelTaskScheduler.runLifetimeContext()
 
-        try await lifetimeTaskScheduler.next()
+        try await viewModelTaskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }
 
     @Test
     func testSlugsReproduceWhenTapped() async throws {
-        async let _ = lifetimeTaskScheduler.run()
+        async let _ = viewModelTaskScheduler.runOnScreenContext()
+        async let _ = viewModelTaskScheduler.runLifetimeContext()
 
         viewModel.viewState.slugs.first?.onTap()
 
-        try await lifetimeTaskScheduler.next()
+        try await viewModelTaskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }

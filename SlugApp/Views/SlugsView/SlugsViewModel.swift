@@ -23,25 +23,20 @@ final class SlugsViewModel {
     private var _viewState: ViewState!
 
     @ObservationIgnored
-    private let lifetimeTaskScheduler: TaskScheduler
+    private let viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
 
     @ObservationIgnored
     private var spawnSlugsTask: Task<Void, Never>?
 
-    /// **Demo commentary:**
-    /// - We accept a "lifetime task scheduler" as a parameter, meaning we expect that the task scheduler has already been set up with a run context to match our view model's lifecycle.
-    /// - We could also accept another task scheduler parameter if we wanted `onAppear`/`onDisappear` scope for some tasks.
     init(
-        lifetimeTaskScheduler: TaskScheduler
+        viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
     ) {
         self.model = Model(slugs: [Model.Slug()])
-        self.lifetimeTaskScheduler = lifetimeTaskScheduler
+        self.viewModelTaskScheduler = viewModelTaskScheduler
 
         _viewState = createViewState()
 
-        /// **Demo commentary:**
-        /// - We can use a run context task for our slug spawning now, because the run context is externally set up to match the lifetime of the view model.
-        lifetimeTaskScheduler.addRunContextTask { [self] in
+        viewModelTaskScheduler.lifetimeTask { [self] in
             try? await spawnSlugs()
         }
     }
@@ -89,7 +84,7 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        lifetimeTaskScheduler.addRunContextTask { @MainActor [self] in
+        viewModelTaskScheduler.onScreenTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
             guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }

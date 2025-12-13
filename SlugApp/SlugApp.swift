@@ -14,9 +14,9 @@ struct SlugApp: App {
         WindowGroup {
             NavigationStack {
                 TabView {
-                    SlugsView(
+                    ViewModelView(
                         viewModelHolder: ViewModelHolder(
-                            viewModel: SlugsViewModel.init(lifetimeTaskScheduler:)
+                            viewModel: SlugsViewModel.init(viewModelTaskScheduler:)
                         )
                     )
                     .tabItem {
