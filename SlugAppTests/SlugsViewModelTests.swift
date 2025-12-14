@@ -29,8 +29,7 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        async let _ = viewModelTaskScheduler.runOnScreenContext()
-        async let _ = viewModelTaskScheduler.runLifetimeContext()
+        async let _ = viewModelTaskScheduler.run()
 
         try await viewModelTaskScheduler.next()
 
@@ -39,8 +38,7 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceWhenTapped() async throws {
-        async let _ = viewModelTaskScheduler.runOnScreenContext()
-        async let _ = viewModelTaskScheduler.runLifetimeContext()
+        async let _ = viewModelTaskScheduler.run()
 
         viewModel.viewState.slugs.first?.onTap()
 

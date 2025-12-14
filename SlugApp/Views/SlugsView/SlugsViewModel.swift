@@ -7,12 +7,13 @@
 
 import Foundation
 import Observation
+import SwiftUI
 
 import ViewModelTaskScheduler
 
 @MainActor
 @Observable
-final class SlugsViewModel {
+final class SlugsViewModel: TaskSchedulerViewModel {
     var viewState: ViewState { _viewState }
 
     @ObservationIgnored
@@ -25,12 +26,10 @@ final class SlugsViewModel {
     private var _viewState: ViewState!
 
     @ObservationIgnored
-    private let viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
+    private let viewModelTaskScheduler: ViewModelTaskScheduler
 
-    /// **Demo commentary:**
-    /// - `TaskScheduler` can be injected to allow unit tests to await task milestones.
     init(
-        viewModelTaskScheduler: ViewModelTaskSchedulerProtocol
+        viewModelTaskScheduler: ViewModelTaskScheduler
     ) {
         self.model = Model(slugs: [Model.Slug()])
         self.viewModelTaskScheduler = viewModelTaskScheduler
@@ -44,6 +43,10 @@ final class SlugsViewModel {
 
     deinit {
         print("SLUGS - DEINIT")
+    }
+
+    func buildView() -> some View {
+        SlugsView(viewModel: self)
     }
 
     private func createViewState() -> ViewState {
@@ -85,7 +88,7 @@ final class SlugsViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        viewModelTaskScheduler.onScreenTask { @MainActor [self] in
+        viewModelTaskScheduler.lifetimeTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
             guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }

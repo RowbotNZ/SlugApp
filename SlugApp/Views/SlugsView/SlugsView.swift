@@ -118,16 +118,6 @@ extension SlugsView {
     }
 }
 
-extension SlugsViewModel: ViewModel {
-    func buildView() -> some View {
-        SlugsView(viewModel: self)
-    }
-}
-
 #Preview {
-    ViewModelView(
-        viewModelHolder: ViewModelHolder(
-            viewModel: SlugsViewModel.init(viewModelTaskScheduler:)
-        )
-    )
+    SlugsViewModel.buildView()
 }
