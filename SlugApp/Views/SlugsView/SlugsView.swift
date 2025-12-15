@@ -119,5 +119,7 @@ extension SlugsView {
 }
 
 #Preview {
-    SlugsViewModel.buildView()
+    SlugsViewModel.buildView {
+        SlugsViewModel(viewModelTaskScheduler: $0)
+    }
 }
