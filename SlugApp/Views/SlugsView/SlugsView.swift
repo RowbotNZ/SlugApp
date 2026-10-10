@@ -125,5 +125,7 @@ extension SlugsView {
         SlugsViewModel(taskScheduler: $0)
     }
 
-    slugsViewModel.subject.buildView()
+    slugsViewModel.subject.startSpawning()
+
+    return slugsViewModel.subject.buildView()
 }

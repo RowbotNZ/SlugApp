@@ -35,10 +35,6 @@ final class SlugsViewModel {
         self.taskScheduler = taskScheduler
 
         _viewState = createViewState()
-
-        taskScheduler.runContextTask { [self] in
-            try? await spawnSlugs()
-        }
     }
 
     deinit {
@@ -47,6 +43,13 @@ final class SlugsViewModel {
 
     func buildView() -> some View {
         SlugsView(viewModel: self)
+    }
+
+    /// Enqueues the long-running slug spawner on the task scheduler's run context. Call this once per run context — i.e. once at creation when scoping to the view model's lifetime, or on each `run(willBegin:)` when scoping to a view's on-screen lifetime.
+    func startSpawning() {
+        taskScheduler.runContextTask { [self] in
+            try? await spawnSlugs()
+        }
     }
 
     private func createViewState() -> ViewState {

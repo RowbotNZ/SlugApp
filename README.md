@@ -10,10 +10,20 @@ As an iOS app developer who had been using MVVM and Combine for a while, I was i
 
 Two considerations were top of mind for me at the time:
 
-- How can view models create lifecycle-aware async operations? Often we want to spawn some long-running or resource intensive async task while the user is looking at a particular screen, but as they navigate away we want to cancel those operations to save resources.
+- How can view models create lifecycle-aware async operations? Sometimes we want to spawn some long-running or resource intensive async task that lives for as long as the view model does. Other times we want to tie that work to a narrower scope, e.g. a particular screen being visible, so that when the user navigates away we cancel it.
 - How can we unit test async view model operations, without exposing the functions directly? Often we will have internal async operations that we don't necessarily want to expose as part of the object's interface, but we need a way for our unit tests to know when these operations complete, so that we know when it's time to make our assertions.
 
-I was curious about ways to leverage SwiftUI's `task` modifier to couple these async operations to the lifecycle of a view. `TaskScheduler` is what I ended up with; it uses a `TaskGroup` and an `AsyncStream` to inject concurrent async operations into the `Task` context provided by the SwiftUI `task` modifier. In this way, any async operations that we inject will be cancelled when the parent `task` is cancelled.
+`TaskScheduler` is what I ended up with. It uses a `TaskGroup` and an `AsyncStream` to inject concurrent async operations into an external `Task` context, referred to as the "run context". The caller provides the run context by invoking `run()` from any parent `Task`, and when the parent task is cancelled all of the scheduled work is cancelled along with it. The scope of that cancellation - view model lifetime, view on-screen lifetime, something else entirely - is simply a matter of where `run()` is called from.
 
-This works really well for tasks that we want to couple to a particular view being on-screen, but it doesn't work for tasks that we want to couple to the lifetime of the view model (i.e. tasks that should be cancelled when nothing else is holding a reference to the VM). This is where `ViewModelHolder` and `ViewModelTaskScheduler` come in, they allow a view model to scope tasks to the lifetime of the VM holder, and when that object is deinitialized then all of the tasks in that scope are cancelled. In this way we don't need to worry as much about strongly capturing `self` in our VM code when we create our async tasks, because we know that these tasks will be cancelled at the appropriate time, causing the `self` reference to be released once the task block returns.
+### Demonstration
 
+The app has two slug tabs backed by instances of `SlugsViewModel`, differing only in how the view model's run context is scoped:
+
+- **Persistent**: the view model is owned by a `LifetimeProxy`, which drives `run()` from a long-lived parent `Task` of its own. The run context lives for as long as the proxy does, so the slugs continue reproducing even while this tab is offscreen.
+- **On Screen**: the view model and task scheduler are held in `@State` on the tab view, and `run()` is called from within a SwiftUI `.task` modifier. Switching to another tab cancels the run context and all of its queued work; switching back re-establishes it (the `willBegin` callback on `run()` begins the slug spawning each time). The view model itself is never deallocated.
+
+Tapping the navigation bar "Clear" button changes the SwiftUI identity of the root view, discarding all of the associated `@State`, and demonstrating run context cancellation in that scenario.
+
+### Lifetime Proxy
+
+`LifetimeProxy` is a small wrapper that scopes a `TaskScheduler`'s run context to the lifetime of a subject object (typically a view model). It owns both the subject and the task scheduler, and kicks off a parent `Task` at init that calls `run()`. When the last reference to the proxy is released the parent task is cancelled, propagating cancellation to every scheduled operation in the run context. This means view model code can strongly capture `self` inside scheduled tasks without worrying about retain cycles. Such tasks are guaranteed to be cancelled, and the captured references released, when the proxy is deallocated.

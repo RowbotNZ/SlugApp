@@ -29,7 +29,9 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        async let _ = taskScheduler.run()
+        async let _ = taskScheduler.run {
+            viewModel.startSpawning()
+        }
 
         try await taskScheduler.next()
 
