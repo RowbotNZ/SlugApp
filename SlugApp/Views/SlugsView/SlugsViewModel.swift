@@ -9,11 +9,11 @@ import Foundation
 import Observation
 import SwiftUI
 
-import ViewModelTaskScheduler
+import TaskScheduler
 
 @MainActor
 @Observable
-final class SlugsViewModel: TaskSchedulerViewModel {
+final class SlugsViewModel {
     var viewState: ViewState { _viewState }
 
     @ObservationIgnored
@@ -26,17 +26,17 @@ final class SlugsViewModel: TaskSchedulerViewModel {
     private var _viewState: ViewState!
 
     @ObservationIgnored
-    private let viewModelTaskScheduler: ViewModelTaskScheduler
+    private let taskScheduler: RunContextTaskSchedulerProtocol
 
     init(
-        viewModelTaskScheduler: ViewModelTaskScheduler
+        taskScheduler: RunContextTaskSchedulerProtocol
     ) {
         self.model = Model(slugs: [Model.Slug()])
-        self.viewModelTaskScheduler = viewModelTaskScheduler
+        self.taskScheduler = taskScheduler
 
         _viewState = createViewState()
 
-        viewModelTaskScheduler.lifetimeTask { [self] in
+        taskScheduler.runContextTask { [self] in
             try? await spawnSlugs()
         }
     }
@@ -88,7 +88,7 @@ final class SlugsViewModel: TaskSchedulerViewModel {
 
         model.slugs[slugIndex].isReproducing = true
 
-        viewModelTaskScheduler.lifetimeTask { @MainActor [self] in
+        taskScheduler.runContextTask { @MainActor [self] in
             try? await Task.sleep(nanoseconds: 5 * NSEC_PER_SEC)
 
             guard let slugIndex = model.slugs.firstIndex(where: { $0.id == slugId }) else { return }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-import ViewModelTaskScheduler
+import LifetimeProxy
 
 struct SlugsView: View {
     var body: some View {
@@ -30,7 +30,7 @@ struct SlugsView: View {
         .navigationTitle(viewModel.viewState.title)
     }
 
-    @State
+    @Bindable
     var viewModel: SlugsViewModel
 }
 
@@ -119,7 +119,11 @@ extension SlugsView {
 }
 
 #Preview {
-    SlugsViewModel.buildView {
-        SlugsViewModel(viewModelTaskScheduler: $0)
+    @Previewable
+    @State
+    var slugsViewModel = LifetimeProxy {
+        SlugsViewModel(taskScheduler: $0)
     }
+
+    slugsViewModel.subject.buildView()
 }

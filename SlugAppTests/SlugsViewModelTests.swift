@@ -8,18 +8,18 @@
 import Foundation
 import Testing
 
-@testable import ViewModelTaskScheduler
+@testable import TaskScheduler
 
 @testable import SlugApp
 
 @MainActor
 struct SlugsViewModelTests {
-    let viewModelTaskScheduler: ViewModelTaskScheduler
+    let taskScheduler: TaskScheduler
     let viewModel: SlugsViewModel
 
     init() {
-        self.viewModelTaskScheduler = ViewModelTaskScheduler()
-        self.viewModel = SlugsViewModel(viewModelTaskScheduler: viewModelTaskScheduler)
+        self.taskScheduler = TaskScheduler()
+        self.viewModel = SlugsViewModel(taskScheduler: taskScheduler)
     }
 
     @Test
@@ -29,20 +29,20 @@ struct SlugsViewModelTests {
 
     @Test
     func testSlugsReproduceOnTheirOwn() async throws {
-        async let _ = viewModelTaskScheduler.run()
+        async let _ = taskScheduler.run()
 
-        try await viewModelTaskScheduler.next()
+        try await taskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }
 
     @Test
     func testSlugsReproduceWhenTapped() async throws {
-        async let _ = viewModelTaskScheduler.run()
+        async let _ = taskScheduler.run()
 
         viewModel.viewState.slugs.first?.onTap()
 
-        try await viewModelTaskScheduler.next()
+        try await taskScheduler.next()
 
         #expect(viewModel.viewState.slugs.count == 2)
     }

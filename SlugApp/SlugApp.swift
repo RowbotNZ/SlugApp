@@ -8,7 +8,7 @@
 import SwiftUI
 import WebKit
 
-import ViewModelTaskScheduler
+import LifetimeProxy
 
 @main
 struct SlugApp: App {
@@ -16,12 +16,10 @@ struct SlugApp: App {
         WindowGroup {
             NavigationStack {
                 TabView {
-                    SlugsViewModel.buildView {
-                        SlugsViewModel(viewModelTaskScheduler: $0)
-                    }
-                    .tabItem {
-                        Label("Slugs", systemImage: "list.bullet")
-                    }
+                    SlugsTabView()
+                        .tabItem {
+                            Label("Slugs", systemImage: "list.bullet")
+                        }
 
                     WebView(
                         url: URL(string: "https://en.wikipedia.org/wiki/Slug")
@@ -49,4 +47,17 @@ struct SlugApp: App {
 
     @State
     private var id: UUID = UUID()
+}
+
+extension SlugApp {
+    private struct SlugsTabView: View {
+        var body: some View {
+            slugsViewModel.subject.buildView()
+        }
+
+        @State
+        private var slugsViewModel = LifetimeProxy {
+            SlugsViewModel(taskScheduler: $0)
+        }
+    }
 }
